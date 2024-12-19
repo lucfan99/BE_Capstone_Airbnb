@@ -1,26 +1,106 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreatePhongDto } from './dto/create-phong.dto';
 import { UpdatePhongDto } from './dto/update-phong.dto';
+import { Phong, PrismaClient } from '@prisma/client';
+import { PhongDto } from './dto/phong.dto';
+import { plainToClass } from 'class-transformer';
 
 @Injectable()
 export class PhongService {
-  create(createPhongDto: CreatePhongDto) {
-    return 'This action adds a new phong';
+  prisma = new PrismaClient();
+
+  async create(createPhongDto: CreatePhongDto): Promise<PhongDto> {
+    try {
+      return await this.prisma.phong.create({
+        data: createPhongDto,
+      });
+    } catch (error) {
+      throw new Error();
+    }
+  }
+  async findAll() {
+    try {
+      let rooms = await this.prisma.nguoiDung.findMany();
+      return rooms.map((user) => plainToClass(PhongDto, user));
+    } catch (error) {
+      throw new Error();
+    }
   }
 
-  findAll() {
-    return `This action returns all phong`;
+  async findRoom(
+    pageIndex: number,
+    pageSize: number,
+    keyword: string,
+  ): Promise<PhongDto[]> {
+    try {
+      let rooms = await this.prisma.phong.findMany({
+        skip: (pageIndex - 1) * pageSize,
+        take: pageSize,
+        where: keyword
+          ? {
+              ten_phong: {
+                contains: keyword,
+              },
+            }
+          : {},
+      });
+      return rooms.map((phong) => plainToClass(PhongDto, phong));
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+  async findOne(id: number): Promise<PhongDto> {
+    try {
+      const room = await this.prisma.phong.findUnique({ where: { id } });
+      if (!room) {
+        throw new Error(`Room with id=${id} is not found`);
+      }
+      return plainToClass(PhongDto, room);
+    } catch (error) {
+      throw new Error(error);
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} phong`;
+  async findName(keyword: string): Promise<PhongDto[]> {
+    try {
+      const room = await this.prisma.phong.findMany({
+        where: keyword
+          ? {
+              ten_phong: {
+                contains: keyword,
+              },
+            }
+          : undefined,
+      });
+      return room.map((phong) => plainToClass(PhongDto, phong));
+    } catch (error) {
+      throw new HttpException(
+        `Error fetching users by name: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  async update(id: number, updatePhongDto: UpdatePhongDto): Promise<PhongDto> {
+    try {
+      const updatedRoom = await this.prisma.phong.update({
+        where: { id },
+        data: updatePhongDto,
+      });
+
+      return plainToClass(PhongDto, updatedRoom);
+    } catch (error) {
+      throw new Error(error);
+    }
   }
 
-  update(id: number, updatePhongDto: UpdatePhongDto) {
-    return `This action updates a #${id} phong`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} phong`;
+  async remove(id: number): Promise<{ message: string }> {
+    try {
+      await this.prisma.phong.delete({
+        where: { id },
+      });
+      return { message: 'Delete room successfully' };
+    } catch (error) {
+      throw new Error(error);
+    }
   }
 }

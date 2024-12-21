@@ -9,13 +9,18 @@ import {
   Res,
   HttpStatus,
   Query,
+  UseInterceptors,
+  UploadedFile,
+  UploadedFiles,
 } from '@nestjs/common';
 import { PhongService } from './phong.service';
-import { CreatePhongDto } from './dto/create-phong.dto';
+import { CreatePhongDto, FileUploadPhongDto } from './dto/create-phong.dto';
 import { UpdatePhongDto } from './dto/update-phong.dto';
 import { PhongDto } from './dto/phong.dto';
 import { Response } from 'express';
-import { ApiQuery } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { storage } from 'src/shared/upload.service';
 
 @Controller('phong')
 export class PhongController {
@@ -95,6 +100,26 @@ export class PhongController {
     }
   }
 
+  @Get('/lay-theo-ma-vi-tri/:id')
+  async findRoomByLocationID(
+    @Param('id') id: string,
+    @Res() res: Response,
+  ): Promise<Response<PhongDto>> {
+    try {
+      const rooms = await this.phongService.findRoomByLocationID(+id);
+      if (!rooms) {
+        return res
+          .status(HttpStatus.NOT_FOUND)
+          .json({ message: `${id} not found` });
+      }
+      return res.status(HttpStatus.OK).json(rooms);
+    } catch (error) {
+      return res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json({ message: 'An error occured', error });
+    }
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updatePhongDto: UpdatePhongDto) {
     return this.phongService.update(+id, updatePhongDto);
@@ -103,5 +128,27 @@ export class PhongController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.phongService.remove(+id);
+  }
+
+  @Post('/Upload-images/:id')
+  @ApiConsumes('multipart/form-data') // define kiểu dữ liệu gửi lên trên swagger
+  @ApiBody({
+    type: FileUploadPhongDto,
+    required: true,
+  })
+  @ApiParam({
+    name: 'id',
+    required: true,
+    type: String,
+  })
+  @UseInterceptors(
+    FilesInterceptor('hinh_anh', 10, { storage: storage('room') }),
+  )
+  uploadImages(
+    @Param('id') id: string,
+    @UploadedFiles() file: Express.Multer.File[],
+    @Res() res: Response,
+  ): any {
+    return res.status(HttpStatus.OK).json({ id, file });
   }
 }

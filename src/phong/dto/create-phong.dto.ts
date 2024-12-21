@@ -42,6 +42,14 @@ export class CreateUserDto {
   @ApiProperty()
   ban_ui: boolean;
   @ApiProperty()
-  @IsNotEmpty({ message: 'Vì trí không để trống' })
+  @IsNotEmpty({ message: 'ViTri không để trống' })
   vi_tri_id: number;
+}
+// export class FileUploadDto {
+//   @ApiProperty({ type: 'string', format: 'binary' })
+//   hinh_anh: any;
+// }
+export class FileUploadPhongDto {
+  @ApiProperty({ type: 'array', items: { type: 'string', format: 'binary' } })
+  hinh_anh: any[];
 }

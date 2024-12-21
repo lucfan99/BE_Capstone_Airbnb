@@ -11,13 +11,23 @@ import {
   Headers,
   Res,
   HttpStatus,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto, FileUploadAvatarDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { request, Response } from 'express';
-import { ApiHeader, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiConsumes,
+  ApiHeader,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { UserDto } from './dto/user.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { storage } from 'src/shared/upload.service';
 
 @Controller('user')
 export class UserController {
@@ -86,14 +96,18 @@ export class UserController {
   ): Promise<Response<UserDto[]>> {
     try {
       let users = await this.userService.findName(keyword);
-      if (!users) {
+      if (!users || users.length === 0) {
         return res
           .status(HttpStatus.NOT_FOUND)
           .json({ message: `${keyword} is not found` });
       }
       return res.status(HttpStatus.OK).json(users);
     } catch (error) {
-      throw new Error(error);
+      console.error('Error occurred in findName controller:', error);
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'An error occurred while searching for users.',
+        error: error.message || 'Unknown error',
+      });
     }
   }
 
@@ -105,5 +119,25 @@ export class UserController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.userService.remove(+id);
+  }
+
+  @Post('/upload-image-avatar/:id')
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    type: FileUploadAvatarDto,
+    required: true,
+  })
+  @ApiParam({
+    name: 'id',
+    required: true,
+    type: String,
+  })
+  @UseInterceptors(FileInterceptor('hinhAnh', { storage: storage('user') }))
+  uploadThumbnail(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Res() res: Response,
+  ): any {
+    return res.status(HttpStatus.OK).json({ id, file });
   }
 }

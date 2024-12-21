@@ -66,10 +66,10 @@ export class VitriService {
 
   async findName(keyword: string): Promise<VitriDto[]> {
     try {
-      const locationname = await this.prisma.nguoiDung.findMany({
+      const locationname = await this.prisma.viTri.findMany({
         where: keyword
           ? {
-              name: {
+              ten_vi_tri: {
                 contains: keyword,
               },
             }
@@ -78,7 +78,7 @@ export class VitriService {
       return locationname.map((location) => plainToClass(VitriDto, location));
     } catch (error) {
       throw new HttpException(
-        `Error fetching users by name: ${error.message}`,
+        `Error fetching locations by name: ${error.message}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

@@ -9,6 +9,9 @@ export class CreateVitriDto {
   tinh_thanh: string;
   @ApiProperty()
   quoc_gia: string;
-  @ApiProperty()
-  hinh_anh: string;
+}
+// DTO cho upload 1 hình ảnh
+export class FileUploadDto {
+  @ApiProperty({ type: 'string', format: 'binary' })
+  hinhAnh: any;
 }

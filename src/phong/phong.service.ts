@@ -20,8 +20,8 @@ export class PhongService {
   }
   async findAll() {
     try {
-      let rooms = await this.prisma.nguoiDung.findMany();
-      return rooms.map((user) => plainToClass(PhongDto, user));
+      let rooms = await this.prisma.phong.findMany();
+      return rooms.map((room) => plainToClass(PhongDto, room));
     } catch (error) {
       throw new Error();
     }
@@ -49,6 +49,21 @@ export class PhongService {
       throw new Error(error);
     }
   }
+
+  async findRoomByLocationID(id: number): Promise<PhongDto[]> {
+    try {
+      const rooms = await this.prisma.phong.findMany({
+        where: { vi_tri_id: id },
+      });
+      if (!rooms) {
+        throw new Error(`Room with id=${id} is not found`);
+      }
+      return rooms.map((cm) => plainToClass(PhongDto, cm));
+    } catch (error) {
+      throw new Error();
+    }
+  }
+
   async findOne(id: number): Promise<PhongDto> {
     try {
       const room = await this.prisma.phong.findUnique({ where: { id } });
@@ -63,7 +78,7 @@ export class PhongService {
 
   async findName(keyword: string): Promise<PhongDto[]> {
     try {
-      const room = await this.prisma.phong.findMany({
+      const roomname = await this.prisma.phong.findMany({
         where: keyword
           ? {
               ten_phong: {
@@ -72,14 +87,15 @@ export class PhongService {
             }
           : undefined,
       });
-      return room.map((phong) => plainToClass(PhongDto, phong));
+      return roomname.map((phong) => plainToClass(PhongDto, phong));
     } catch (error) {
       throw new HttpException(
-        `Error fetching users by name: ${error.message}`,
+        `Error fetching rooms by name: ${error.message}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
+
   async update(id: number, updatePhongDto: UpdatePhongDto): Promise<PhongDto> {
     try {
       const updatedRoom = await this.prisma.phong.update({

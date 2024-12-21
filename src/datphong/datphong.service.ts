@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { CreateDatphongDto } from './dto/create-datphong.dto';
 import { UpdateDatphongDto } from './dto/update-datphong.dto';
-import { DatphongDto } from './dto/datphong.dto';
+import { datphongDto } from './dto/datphong.dto';
 import { plainToClass } from 'class-transformer';
 
 @Injectable()
@@ -10,12 +10,12 @@ export class DatphongService {
   prisma = new PrismaClient();
 
   // Tạo đặt phòng mới
-  async create(createDatphongDto: CreateDatphongDto): Promise<DatphongDto> {
+  async create(createDatphongDto: CreateDatphongDto): Promise<datphongDto> {
     try {
       const newBooking = await this.prisma.datPhong.create({
         data: createDatphongDto,
       });
-      return plainToClass(DatphongDto, newBooking);
+      return plainToClass(datphongDto, newBooking);
     } catch (error) {
       throw new HttpException(
         `Error creating booking: ${error.message}`,
@@ -25,10 +25,10 @@ export class DatphongService {
   }
 
   // Lấy danh sách tất cả đặt phòng
-  async findAll(): Promise<DatphongDto[]> {
+  async findAll(): Promise<datphongDto[]> {
     try {
       const bookings = await this.prisma.datPhong.findMany();
-      return bookings.map((booking) => plainToClass(DatphongDto, booking));
+      return bookings.map((booking) => plainToClass(datphongDto, booking));
     } catch (error) {
       throw new HttpException(
         `Error fetching bookings: ${error.message}`,
@@ -38,7 +38,7 @@ export class DatphongService {
   }
 
   // Tìm đặt phòng theo ID
-  async findOne(id: number): Promise<DatphongDto> {
+  async findOne(id: number): Promise<datphongDto> {
     try {
       const booking = await this.prisma.datPhong.findUnique({ where: { id } });
       if (!booking) {
@@ -47,33 +47,10 @@ export class DatphongService {
           HttpStatus.NOT_FOUND,
         );
       }
-      return plainToClass(DatphongDto, booking);
+      return plainToClass(datphongDto, booking);
     } catch (error) {
       throw new HttpException(
         `Error fetching booking: ${error.message}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
-  // Tìm đặt phòng theo từ khóa (ví dụ: tìm theo tên khách)
-  async findByKeyword(
-    keyword: string,
-  ): Promise<DatphongDto[]> {
-    try {
-      const bookings = await this.prisma.datPhong.findMany({
-        where: keyword
-          ? {
-              guestName: {
-                contains: keyword,
-              },
-            }
-          : undefined,
-      });
-      return bookings.map((booking) => plainToClass(DatphongDto, booking));
-    } catch (error) {
-      throw new HttpException(
-        `Error fetching bookings by keyword: ${error.message}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -83,13 +60,13 @@ export class DatphongService {
   async update(
     id: number,
     updateDatphongDto: UpdateDatphongDto,
-  ): Promise<DatphongDto> {
+  ): Promise<datphongDto> {
     try {
       const updatedBooking = await this.prisma.datPhong.update({
         where: { id },
         data: updateDatphongDto,
       });
-      return plainToClass(DatphongDto, updatedBooking);
+      return plainToClass(datphongDto, updatedBooking);
     } catch (error) {
       throw new HttpException(
         `Error updating booking: ${error.message}`,
@@ -111,16 +88,15 @@ export class DatphongService {
     }
   }
 
-
- // Tìm đặt phòng theo mã người dùng
-  async findByUser(maNguoiDung: number): Promise<DatphongDto[]> {
+  // Tìm đặt phòng theo mã người dùng
+  async findByUser(maNguoiDung: number): Promise<datphongDto[]> {
     try {
       const bookings = await this.prisma.datPhong.findMany({
         where: {
           ma_nguoi_dat: maNguoiDung, // Điều kiện tìm theo ma_nguoi_dat
         },
       });
-      return bookings.map((booking) => plainToClass(DatphongDto, booking));
+      return bookings.map((booking) => plainToClass(datphongDto, booking));
     } catch (error) {
       throw new HttpException(
         `Error fetching bookings by user: ${error.message}`,
@@ -129,5 +105,3 @@ export class DatphongService {
     }
   }
 }
-
-

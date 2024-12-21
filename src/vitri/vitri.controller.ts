@@ -9,13 +9,17 @@ import {
   Res,
   HttpStatus,
   Query,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { VitriService } from './vitri.service';
-import { CreateVitriDto } from './dto/create-vitri.dto';
+import { CreateVitriDto, FileUploadDto } from './dto/create-vitri.dto';
 import { UpdateVitriDto } from './dto/update-vitri.dto';
 import { VitriDto } from './dto/vitri.dto';
 import { Response } from 'express';
-import { ApiQuery } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { storage } from 'src/shared/upload.service';
 
 @Controller('vitri')
 export class VitriController {
@@ -52,7 +56,7 @@ export class VitriController {
     return res.status(HttpStatus.OK).json(users);
   }
 
-  @Get('/get-location-by-id/:id')
+  @Get(':id')
   async findOne(
     @Param('id') id: string,
     @Res() res: Response,
@@ -93,5 +97,25 @@ export class VitriController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.vitriService.remove(+id);
+  }
+
+  @Post('/upload-image-location/:id')
+  @ApiConsumes('multipart/form-data') // define kiểu dữ liệu gửi lên trên swagger
+  @ApiBody({
+    type: FileUploadDto,
+    required: true,
+  }) // define body trên swagger
+  @ApiParam({
+    name: 'id',
+    required: true,
+    type: String,
+  })
+  @UseInterceptors(FileInterceptor('hinhAnh', { storage: storage('location') }))
+  uploadThumbnail(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Res() res: Response,
+  ): any {
+    return res.status(HttpStatus.OK).json({ id, file });
   }
 }

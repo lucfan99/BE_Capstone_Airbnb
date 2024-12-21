@@ -37,7 +37,7 @@ export class PhongDto {
   ban_ui: boolean;
   @Expose()
   hinh_anh: string;
-  @Exclude()
+  @Expose()
   vi_tri_id: number;
 
   constructor(partial: Partial<PhongDto>) {

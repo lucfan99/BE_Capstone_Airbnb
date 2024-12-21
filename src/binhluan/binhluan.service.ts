@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateBinhluanDto } from './dto/create-binhluan.dto';
 import { UpdateBinhluanDto } from './dto/update-binhluan.dto';
 import { PrismaClient } from '@prisma/client';
@@ -27,13 +27,26 @@ export class BinhluanService {
     }
   }
 
-  async findOne(id: number): Promise<BinhLuanDto> {
+  // async findOne(id: number): Promise<BinhLuanDto> {
+  //   try {
+  //     const comment = await this.prisma.binhLuan.findUnique({ where: { id } });
+  //     if (!comment) {
+  //       throw new Error(`Comment with id=${id} is not found`);
+  //     }
+  //     return plainToClass(BinhLuanDto, comment);
+  //   } catch (error) {
+  //     throw new Error();
+  //   }
+  // }
+  async findByRoomID(id: number): Promise<BinhLuanDto[]> {
     try {
-      const comment = await this.prisma.binhLuan.findUnique({ where: { id } });
-      if (!comment) {
+      const comments = await this.prisma.binhLuan.findMany({
+        where: { ma_cong_viec: id },
+      });
+      if (!comments) {
         throw new Error(`Comment with id=${id} is not found`);
       }
-      return plainToClass(BinhLuanDto, comment);
+      return comments.map((cm) => plainToClass(BinhLuanDto, cm));
     } catch (error) {
       throw new Error();
     }

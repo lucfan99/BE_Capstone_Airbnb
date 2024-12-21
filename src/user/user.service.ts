@@ -31,7 +31,7 @@ export class UserService {
     keyword: string,
   ): Promise<UserDto[]> {
     try {
-      let users = await this.prisma.nguoiDung.findMany({
+      const users = await this.prisma.nguoiDung.findMany({
         skip: (pageIndex - 1) * pageSize,
         take: pageSize,
         where: keyword
@@ -40,7 +40,7 @@ export class UserService {
                 contains: keyword,
               },
             }
-          : {},
+          : undefined,
       });
       return users.map((user) => plainToClass(UserDto, user));
     } catch (error) {

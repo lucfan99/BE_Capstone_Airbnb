@@ -17,3 +17,7 @@ export class CreateUserDto {
   @ApiProperty()
   role: string;
 }
+export class FileUploadAvatarDto {
+  @ApiProperty({ type: 'string', format: 'binary' })
+  hinhAnh: any;
+}

@@ -4,27 +4,27 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsInt, IsOptional, IsDateString, IsNotEmpty } from 'class-validator';
 
 export class UpdateDatphongDto extends PartialType(CreateDatphongDto) {
-  @IsOptional()  
+  @IsOptional()
   @IsInt()
-  @ApiProperty({ required: false })  
+  @ApiProperty({ required: false })
   ma_phong?: number;
 
-  @IsOptional() 
+  @IsOptional()
   @IsDateString()
   @ApiProperty({ required: false })
-  ngay_den?: string;
+  ngay_den?: Date;
 
-  @IsOptional() 
+  @IsOptional()
   @IsDateString()
   @ApiProperty({ required: false })
-  ngay_di?: string;
+  ngay_di?: Date;
 
-  @IsOptional() 
+  @IsOptional()
   @IsInt()
   @ApiProperty({ required: false })
   so_luong_khach?: number;
 
-  @IsOptional() 
+  @IsOptional()
   @IsInt()
   @ApiProperty({ required: false })
   ma_nguoi_dat?: number;
